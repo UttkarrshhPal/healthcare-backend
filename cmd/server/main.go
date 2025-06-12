@@ -6,8 +6,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
-    "os"
-    
+	"os"
 
 	_ "healthcare-portal/docs"
 	"healthcare-portal/internal/config"
@@ -72,13 +71,15 @@ func main() {
 
 	// Start server
 	port := os.Getenv("PORT")
-    if port == "" {
-        port = cfg.Server.Port // fallback to config/default (e.g., 8080) for local dev
-    }
+	if port == "" {
+		port = cfg.Server.Port // fallback to config/default (e.g., 8080) for local dev
+	}
 	log.Printf("Server starting on port %s", port)
 	if err := router.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
+
+	router.Run(":" + port) // Start the server on the specified port
 }
 
 func setupRouter(authHandler *handlers.AuthHandler, patientHandler *handlers.PatientHandler, appointmentHandler *handlers.AppointmentHandler) *gin.Engine {
@@ -98,12 +99,11 @@ func setupRouter(authHandler *handlers.AuthHandler, patientHandler *handlers.Pat
 	})
 
 	router.GET("/swagger/*any", ginSwagger.CustomWrapHandler(
-        &ginSwagger.Config{
-            URL: "/swagger/doc.json",  // generated path
-        },
-        swaggerFiles.Handler,
-    ))
-
+		&ginSwagger.Config{
+			URL: "/swagger/doc.json", // generated path
+		},
+		swaggerFiles.Handler,
+	))
 
 	// API routes
 	api := router.Group("/api")
