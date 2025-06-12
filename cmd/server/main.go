@@ -6,6 +6,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
+    "os"
     
 
 	_ "healthcare-portal/docs"
@@ -70,7 +71,10 @@ func main() {
 	router := setupRouter(authHandler, patientHandler, appointmentHandler)
 
 	// Start server
-	port := cfg.Server.Port
+	port := os.Getenv("PORT")
+    if port == "" {
+        port = cfg.Server.Port // fallback to config/default (e.g., 8080) for local dev
+    }
 	log.Printf("Server starting on port %s", port)
 	if err := router.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
