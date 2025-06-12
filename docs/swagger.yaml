@@ -1,0 +1,623 @@
+basePath: /api
+definitions:
+  handlers.CreateAppointmentRequest:
+    properties:
+      date:
+        type: string
+      doctor_id:
+        type: integer
+      notes:
+        type: string
+      patient_id:
+        type: integer
+      time:
+        type: string
+    required:
+    - date
+    - doctor_id
+    - patient_id
+    - time
+    type: object
+  handlers.CreatePatientRequest:
+    properties:
+      address:
+        type: string
+      allergies:
+        type: string
+      blood_group:
+        type: string
+      current_medication:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      emergency_contact:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      insurance_number:
+        type: string
+      last_name:
+        type: string
+      medical_history:
+        type: string
+      phone:
+        type: string
+    required:
+    - date_of_birth
+    - first_name
+    - gender
+    - last_name
+    - phone
+    type: object
+  handlers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlers.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  handlers.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        $ref: '#/definitions/models.UserRole'
+    required:
+    - email
+    - name
+    - password
+    - role
+    type: object
+  models.Appointment:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      date:
+        type: string
+      doctor_id:
+        type: integer
+      id:
+        type: integer
+      notes:
+        type: string
+      patient_id:
+        type: integer
+      status:
+        $ref: '#/definitions/models.AppointmentStatus'
+      time:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.AppointmentStatus:
+    enum:
+    - scheduled
+    - completed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - StatusScheduled
+    - StatusCompleted
+    - StatusCancelled
+  models.Patient:
+    properties:
+      address:
+        type: string
+      allergies:
+        type: string
+      blood_group:
+        type: string
+      created_at:
+        type: string
+      current_medication:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      emergency_contact:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: integer
+      insurance_number:
+        type: string
+      last_name:
+        type: string
+      last_updated_by:
+        type: integer
+      medical_history:
+        type: string
+      phone:
+        type: string
+      registered_by:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/models.UserRole'
+      updated_at:
+        type: string
+    type: object
+  models.UserRole:
+    enum:
+    - receptionist
+    - doctor
+    type: string
+    x-enum-varnames:
+    - RoleReceptionist
+    - RoleDoctor
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API for Healthcare Portal with Receptionist and Doctor portals
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Healthcare Portal API
+  version: "1.0"
+paths:
+  /api/appointments:
+    get:
+      consumes:
+      - application/json
+      description: Get all appointments with pagination
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get All Appointments
+      tags:
+      - appointments
+    post:
+      consumes:
+      - application/json
+      description: Create a new appointment (Receptionist only)
+      parameters:
+      - description: Appointment details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateAppointmentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Appointment'
+      security:
+      - BearerAuth: []
+      summary: Create Appointment
+      tags:
+      - appointments
+  /api/appointments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an appointment (Receptionist only)
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete Appointment
+      tags:
+      - appointments
+    get:
+      consumes:
+      - application/json
+      description: Get an appointment by ID
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Appointment'
+      security:
+      - BearerAuth: []
+      summary: Get Appointment by ID
+      tags:
+      - appointments
+  /api/appointments/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Update the status of an appointment
+      parameters:
+      - description: Appointment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New status
+        in: body
+        name: status
+        required: true
+        schema:
+          properties:
+            status:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update Appointment Status
+      tags:
+      - appointments
+  /api/appointments/date:
+    get:
+      consumes:
+      - application/json
+      description: Get appointments for a specific date
+      parameters:
+      - description: Date (YYYY-MM-DD)
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Appointment'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get Appointments by Date
+      tags:
+      - appointments
+  /api/appointments/doctor/{doctorId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all appointments for a specific doctor
+      parameters:
+      - description: Doctor ID
+        in: path
+        name: doctorId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Appointment'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get Doctor Appointments
+      tags:
+      - appointments
+  /api/appointments/patient/{patientId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all appointments for a specific patient
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Appointment'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get Patient Appointments
+      tags:
+      - appointments
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.LoginResponse'
+      summary: Login
+      tags:
+      - auth
+  /api/auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get currently logged in user details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      security:
+      - BearerAuth: []
+      summary: Get Current User
+      tags:
+      - auth
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: Registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Register
+      tags:
+      - auth
+  /api/patients:
+    get:
+      consumes:
+      - application/json
+      description: Get all patients with pagination
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get All Patients
+      tags:
+      - patients
+    post:
+      consumes:
+      - application/json
+      description: Create a new patient (Receptionist only)
+      parameters:
+      - description: Patient details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreatePatientRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Patient'
+      security:
+      - BearerAuth: []
+      summary: Create Patient
+      tags:
+      - patients
+  /api/patients/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a patient (Receptionist only)
+      parameters:
+      - description: Patient ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete Patient
+      tags:
+      - patients
+    get:
+      consumes:
+      - application/json
+      description: Get a patient by ID
+      parameters:
+      - description: Patient ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Patient'
+      security:
+      - BearerAuth: []
+      summary: Get Patient by ID
+      tags:
+      - patients
+    put:
+      consumes:
+      - application/json
+      description: Update a patient's information
+      parameters:
+      - description: Patient ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated patient details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreatePatientRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Patient'
+      security:
+      - BearerAuth: []
+      summary: Update Patient
+      tags:
+      - patients
+  /api/patients/search:
+    get:
+      consumes:
+      - application/json
+      description: Search patients by name, email, or phone
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Patient'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Search Patients
+      tags:
+      - patients
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
